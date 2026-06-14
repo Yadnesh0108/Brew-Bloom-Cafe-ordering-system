@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders — Admin Panel</title>
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar__logo"><span>☕</span><h2>Brew &amp; Bloom<br><small style="font-size:0.75rem;font-weight:500;color:var(--text-sidebar);">Admin Panel</small></h2></div>
+  <div class="sidebar__label">Main</div>
+  <nav class="sidebar__nav">
+    <a href="index.html"><span class="nav-icon">📊</span> Dashboard</a>
+    <a href="menu.html"><span class="nav-icon">🍽️</span> Menu Items</a>
+    <a href="orders.html" class="active"><span class="nav-icon">📋</span> Orders</a>
+  </nav>
+  <div class="sidebar__label">Account</div>
+  <nav class="sidebar__nav">
+    <a href="../index.html"><span class="nav-icon">🏠</span> View Site</a>
+  </nav>
+  <div class="sidebar__footer"><a href="#" id="admin-logout">🚪 Logout</a></div>
+</aside>
+
+<div class="admin-main">
+  <div class="admin-topbar">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <button id="sidebar-toggle" style="font-size:1.25rem;color:var(--text-main);">☰</button>
+      <h1>Order Management</h1>
+    </div>
+    <div class="admin-topbar__right">
+      <button class="btn btn-outline btn-sm" onclick="loadOrders()">🔄 Refresh</button>
+      <span>👋 <strong id="admin-name">Admin</strong></span>
+    </div>
+  </div>
+
+  <div class="admin-content">
+
+    <!-- Status filter tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="filterStatus('',this)">All</button>
+      <button class="tab-btn" onclick="filterStatus('Pending',this)">🟡 Pending</button>
+      <button class="tab-btn" onclick="filterStatus('Preparing',this)">🔵 Preparing</button>
+      <button class="tab-btn" onclick="filterStatus('Ready',this)">🟢 Ready</button>
+      <button class="tab-btn" onclick="filterStatus('Delivered',this)">⚫ Delivered</button>
+      <button class="tab-btn" onclick="filterStatus('Cancelled',this)">🔴 Cancelled</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>Orders <span id="orders-count" style="font-size:.85rem;color:var(--text-muted);"></span></h3>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Customer</th>
+              <th>Table</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Update Status</th>
+            </tr>
+          </thead>
+          <tbody id="orders-table-body">
+            <tr><td colspan="8" style="text-align:center;padding:3rem;">
+              <div class="spinner" style="margin:auto;"></div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Order detail modal -->
+<div class="modal-overlay hidden" id="order-modal">
+  <div class="modal">
+    <div class="modal__header">
+      <h3 id="order-modal-title">Order Detail</h3>
+      <span class="modal__close" onclick="document.getElementById('order-modal').classList.add('hidden')">✕</span>
+    </div>
+    <div id="order-modal-body"></div>
+  </div>
+</div>
+
+<script src="../js/main.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+let allOrders  = [];
+let statusFilter = '';
+
+const STATUSES = ['Pending','Paid','Preparing','Ready','Delivered','Cancelled'];
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const user = await requireAdminJs();
+  if (!user) return;
+  document.getElementById('admin-logout').addEventListener('click', e => { e.preventDefault(); Auth.logout(); });
+  await loadOrders();
+  // Auto-refresh every 20 seconds
+  setInterval(loadOrders, 20000);
+});
+
+async function loadOrders() {
+  const url = '/api/admin/all-orders';
+  const res  = await fetch(url, { credentials: 'same-origin' });
+  const data = await res.json();
+  if (!data.success) { toast('Failed to load orders', 'error'); return; }
+  
+  allOrders = data.data;
+  const filteredOrders = statusFilter ? allOrders.filter(o => o.status === statusFilter) : allOrders;
+  renderOrders(filteredOrders);
+}
+
+function filterStatus(status, btn) {
+  statusFilter = status;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  loadOrders();
+}
+
+function renderOrders(orders) {
+  document.getElementById('orders-count').textContent = `(${orders.length})`;
+  const tbody = document.getElementById('orders-table-body');
+  if (!orders.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted);">No orders found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = orders.map(o => `
+    <tr id="order-row-${o.id}">
+      <td><strong>#${o.id}</strong></td>
+      <td>${o.user_name}<br><span style="font-size:.76rem;color:var(--text-muted);">${o.user_email}</span></td>
+      <td>${o.table_no || '—'}</td>
+      <td style="font-size:.82rem;max-width:180px;">
+        <span style="cursor:pointer;color:var(--primary);text-decoration:underline;" onclick="viewOrderDetail(${o.id})">
+          ${o.items.slice(0,2).map(i=>`${i.name}×${i.quantity}`).join(', ')}${o.items.length>2?` +${o.items.length-2} more`:''}
+        </span>
+      </td>
+      <td><strong>₹${Number(o.total_price).toFixed(2)}</strong></td>
+      <td><span class="status-badge status-${o.status}" id="badge-${o.id}">${o.status}</span></td>
+      <td style="font-size:.8rem;">${new Date(o.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+      <td>
+        <select class="status-select" id="sel-${o.id}" onchange="updateStatus(${o.id},this.value)">
+          ${STATUSES.map(s => `<option value="${s}" ${s===o.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function updateStatus(orderId, status) {
+  const res  = await fetch(`/api/admin/orders/${orderId}/status`, {
+    method: 'PUT', credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  const data = await res.json();
+  if (data.success) {
+    toast(`Order #${orderId} → ${status}`, 'success', 2000);
+    const badge = document.getElementById(`badge-${orderId}`);
+    if (badge) { badge.className = `status-badge status-${status}`; badge.textContent = status; }
+  } else {
+    toast(data.message, 'error');
+  }
+}
+
+async function viewOrderDetail(id) {
+  const res  = await fetch(`/api/admin/orders/${id}`, { credentials:'same-origin' });
+  const data = await res.json();
+  if (!data.success) { toast('Could not load order detail', 'error'); return; }
+  const o = data.data;
+  document.getElementById('order-modal-title').textContent = `Order #${o.id}`;
+  document.getElementById('order-modal-body').innerHTML = `
+    <div style="margin-bottom:1rem;">
+      <p><strong>Customer:</strong> ${o.user_name}</p>
+      <p><strong>Table:</strong> ${o.table_no || 'N/A'}</p>
+      <p><strong>Status:</strong> <span class="status-badge status-${o.status}">${o.status}</span></p>
+      <p><strong>Date:</strong> ${new Date(o.created_at).toLocaleString('en-IN')}</p>
+      ${o.notes ? `<p><strong>Notes:</strong> ${o.notes}</p>` : ''}
+    </div>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="background:var(--bg-body);"><th style="padding:.6rem;text-align:left;font-size:.8rem;">Item</th><th style="padding:.6rem;text-align:center;font-size:.8rem;">Qty</th><th style="padding:.6rem;text-align:right;font-size:.8rem;">Price</th></tr></thead>
+      <tbody>
+        ${o.items.map(i => `<tr><td style="padding:.5rem .6rem;">${i.name}</td><td style="text-align:center;">${i.quantity}</td><td style="text-align:right;">₹${Number(i.unit_price*i.quantity).toFixed(2)}</td></tr>`).join('')}
+      </tbody>
+      <tfoot><tr><td colspan="2" style="padding:.75rem .6rem;font-weight:600;">Total</td><td style="text-align:right;font-weight:600;color:var(--primary);">₹${Number(o.total_price).toFixed(2)}</td></tr></tfoot>
+    </table>
+  `;
+  document.getElementById('order-modal').classList.remove('hidden');
+}
+</script>
+</body>
+</html>

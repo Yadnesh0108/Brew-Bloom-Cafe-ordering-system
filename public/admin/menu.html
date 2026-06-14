@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Management — Admin</title>
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar__logo"><span>☕</span><h2>Brew &amp; Bloom<br><small style="font-size:0.75rem;font-weight:500;color:var(--text-sidebar);">Admin Panel</small></h2></div>
+  <div class="sidebar__label">Main</div>
+  <nav class="sidebar__nav">
+    <a href="index.html"><span class="nav-icon">📊</span> Dashboard</a>
+    <a href="menu.html" class="active"><span class="nav-icon">🍽️</span> Menu Items</a>
+    <a href="orders.html"><span class="nav-icon">📋</span> Orders</a>
+  </nav>
+  <div class="sidebar__label">Account</div>
+  <nav class="sidebar__nav">
+    <a href="../index.html"><span class="nav-icon">🏠</span> View Site</a>
+  </nav>
+  <div class="sidebar__footer"><a href="#" id="admin-logout">🚪 Logout</a></div>
+</aside>
+
+<div class="admin-main">
+  <div class="admin-topbar">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <button id="sidebar-toggle" style="font-size:1.25rem;color:var(--text-main);">☰</button>
+      <h1>Menu Management</h1>
+    </div>
+    <div class="admin-topbar__right">
+      <button class="btn btn-danger btn-sm" onclick="deleteAllItems()" style="margin-right:.5rem;">🗑️ Delete All</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Item</button>
+      <span>👋 <strong id="admin-name">Admin</strong></span>
+    </div>
+  </div>
+
+  <div class="admin-content">
+
+    <!-- Filter tabs -->
+    <div class="tabs" id="cat-tabs">
+      <button class="tab-btn active" data-id="0" onclick="filterCat(0,this)">All</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>Menu Items <span id="item-count" style="font-size:.85rem;color:var(--text-muted);"></span></h3>
+        <input type="text" id="menu-filter" placeholder="Search items…"
+          style="padding:.45rem .9rem;border:1px solid var(--border-color);border-radius:var(--radius-md);font-size:.88rem;outline:none;width:220px;"
+          oninput="filterTable(this.value)">
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="menu-table-body">
+            <tr><td colspan="6" style="text-align:center;padding:3rem;"><div class="spinner" style="margin:auto;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Add / Edit Modal -->
+<div class="modal-overlay hidden" id="item-modal">
+  <div class="modal">
+    <div class="modal__header">
+      <h3 id="modal-title">Add Menu Item</h3>
+      <span class="modal__close" onclick="closeModal()">✕</span>
+    </div>
+    <form id="item-form">
+      <input type="hidden" id="item-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Item Name *</label>
+          <input type="text" id="item-name" placeholder="e.g. Caramel Latte" required>
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="item-category" required></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="item-desc" placeholder="Short description…"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price (₹) *</label>
+          <input type="number" id="item-price" min="1" step="0.01" placeholder="0.00" required>
+        </div>
+        <div class="form-group">
+          <label>Availability</label>
+          <select id="item-available">
+            <option value="1">✅ Available</option>
+            <option value="0">❌ Unavailable</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Image Upload</label>
+        <input type="file" id="item-image-file" accept="image/*" onchange="previewImage('item-image-file','img-preview')">
+        <img id="img-preview" class="img-preview" alt="Preview">
+        <div class="form-hint">Or enter filename below (for existing images)</div>
+        <input type="text" id="item-image-name" placeholder="filename.jpg" style="margin-top:.4rem;">
+      </div>
+      <div style="display:flex;gap:.75rem;margin-top:1rem;">
+        <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="save-btn">Save Item</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="../js/main.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+let allMenuItems  = [];
+let allCategories = [];
+let activeCat     = 0;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const user = await requireAdminJs();
+  if (!user) return;
+  document.getElementById('admin-logout').addEventListener('click', e => { e.preventDefault(); Auth.logout(); });
+  await loadCategories();
+  await loadMenu();
+  document.getElementById('item-form').addEventListener('submit', saveItem);
+});
+
+async function loadCategories() {
+  const res = await fetch('/api/menu/categories', { credentials:'same-origin' });
+  const data = await res.json();
+  if (!data.success) return;
+  allCategories = data.data;
+
+  const tabs = document.getElementById('cat-tabs');
+  data.data.forEach(c => {
+    tabs.innerHTML += `<button class="tab-btn" data-id="${c.id}" onclick="filterCat(${c.id},this)">${c.icon} ${c.name}</button>`;
+  });
+}
+
+async function loadMenu() {
+  const res  = await fetch('/api/menu', { credentials:'same-origin' });
+  const data = await res.json();
+  allMenuItems = data.success ? getVisibleMenuItems(data.data || []) : [];
+  renderTable(allMenuItems);
+}
+
+function renderTable(items) {
+  const tbody = document.getElementById('menu-table-body');
+  document.getElementById('item-count').textContent = `(${items.length})`;
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">No items found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(i => `
+    <tr id="row-${i.id}">
+      <td><img class="td-img" src="${i.resolved_image || getMenuImageSrc(i)}" alt="${i.name}"></td>
+      <td class="td-name">${i.name}<br><span style="font-size:.78rem;color:var(--text-muted);">${i.description||''}</span></td>
+      <td>${i.category_icon||''} ${i.category_name}</td>
+      <td>₹${Number(i.price).toFixed(2)}</td>
+      <td>${i.available ? '<span style="color:var(--success);font-weight:600;">✅ Active</span>' : '<span style="color:var(--danger);">❌ Hidden</span>'}</td>
+      <td>
+        <div class="table-actions">
+          <button class="btn btn-outline btn-sm" onclick="openEditModal(${i.id})">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteItem(${i.id},'${i.name.replace(/'/g,"\\'")}')">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterCat(id, btn) {
+  activeCat = id;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const filtered = id ? allMenuItems.filter(i => i.category_id == id) : allMenuItems;
+  renderTable(filtered);
+}
+
+function filterTable(q) {
+  const filtered = allMenuItems.filter(i =>
+    (!activeCat || i.category_id == activeCat) &&
+    (i.name.toLowerCase().includes(q.toLowerCase()) || (i.description||'').toLowerCase().includes(q.toLowerCase()))
+  );
+  renderTable(filtered);
+}
+
+// ── Modal ─────────────────────────────────────────────────────
+function openAddModal() {
+  document.getElementById('modal-title').textContent = 'Add Menu Item';
+  document.getElementById('item-id').value    = '';
+  document.getElementById('item-form').reset();
+  document.getElementById('img-preview').style.display = 'none';
+  loadCategoryOptions('item-category');
+  document.getElementById('item-modal').classList.remove('hidden');
+}
+
+function openEditModal(id) {
+  const item = allMenuItems.find(i => i.id == id);
+  if (!item) return;
+  document.getElementById('modal-title').textContent = 'Edit Menu Item';
+  document.getElementById('item-id').value          = item.id;
+  document.getElementById('item-name').value        = item.name;
+  document.getElementById('item-desc').value        = item.description || '';
+  document.getElementById('item-price').value       = item.price;
+  document.getElementById('item-available').value   = item.available;
+  document.getElementById('item-image-name').value  = item.image || '';
+  const prev = document.getElementById('img-preview');
+  prev.src = item.resolved_image || getMenuImageSrc(item); prev.style.display = 'block';
+  loadCategoryOptions('item-category', item.category_id);
+  document.getElementById('item-modal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('item-modal').classList.add('hidden');
+}
+
+async function saveItem(e) {
+  e.preventDefault();
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const id = document.getElementById('item-id').value;
+
+  // Try upload first
+  let imageFilename = document.getElementById('item-image-name').value.trim() || 'default.jpg';
+  const fileInput = document.getElementById('item-image-file');
+  if (fileInput.files[0]) {
+    const uploaded = await uploadImage('item-image-file');
+    if (uploaded) imageFilename = uploaded;
+  }
+
+  const payload = {
+    name:        document.getElementById('item-name').value.trim(),
+    category_id: document.getElementById('item-category').value,
+    description: document.getElementById('item-desc').value.trim(),
+    price:       document.getElementById('item-price').value,
+    available:   document.getElementById('item-available').value,
+    image:       imageFilename,
+  };
+
+  let res;
+  if (id) {
+    payload.id = id;
+    res = await fetch('/api/admin/menu', { method:'PUT', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+  } else {
+    res = await fetch('/api/admin/menu', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+  }
+  const data = await res.json();
+
+  if (data.success) {
+    toast(id ? 'Item updated!' : 'Item added!', 'success');
+    closeModal();
+    await loadMenu();
+  } else {
+    toast(data.message || 'Failed to save.', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Save Item';
+}
+
+async function deleteItem(id, name) {
+  confirmAction(`Delete "${name}"? This cannot be undone.`, async () => {
+    const res  = await fetch(`/api/admin/menu/${id}`, { method:'DELETE', credentials:'same-origin' });
+    const data = await res.json();
+    if (data.success) { toast('Item deleted.', 'success'); await loadMenu(); }
+    else toast(data.message, 'error');
+  });
+}
+
+async function deleteAllItems() {
+  confirmAction('⚠️ Delete ALL menu items? This cannot be undone!', async () => {
+    const res  = await fetch('/api/admin/menu', { method:'DELETE', credentials:'same-origin' });
+    const data = await res.json();
+    if (data.success) { toast('All items deleted.', 'success'); await loadMenu(); }
+    else toast(data.message, 'error');
+  });
+}
+</script>
+</body>
+</html>

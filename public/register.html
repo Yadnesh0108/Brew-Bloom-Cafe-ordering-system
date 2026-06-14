@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — Brew &amp; Bloom Cafe</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="auth-page">
+
+<div class="auth-card">
+  <div class="auth-logo">
+    <div style="font-size:2.5rem;margin-bottom:.5rem;">🌸</div>
+    <h1>Join Brew &amp; Bloom</h1>
+    <p>Create your account and start ordering</p>
+  </div>
+
+  <form id="register-form" autocomplete="on">
+    <div class="form-group">
+      <label for="fullname">Full Name</label>
+      <input type="text" id="fullname" name="fullname" placeholder="Priya Sharma" required autocomplete="name">
+    </div>
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Min. 6 characters" required autocomplete="new-password">
+      <div class="form-hint">Must be at least 6 characters long</div>
+    </div>
+    <div class="form-group">
+      <label for="confirm_password">Confirm Password</label>
+      <input type="password" id="confirm_password" name="confirm_password" placeholder="Repeat your password" required autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label for="role">Account Type</label>
+      <select id="role" name="role" required style="padding:.65rem 1rem;border:2px solid var(--neutral-200);border-radius:var(--radius-md);width:100%;font-size:.92rem;color:var(--primary-800);">
+        <option value="user">Customer</option>
+        <option value="admin">Administrator Staff</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary btn-full" style="margin-top:.5rem;padding:.8rem;font-size:1rem;">Create Account</button>
+  </form>
+
+  <div class="auth-switch">
+    Already have an account? <a href="login.html">Sign in →</a>
+  </div>
+  <div class="auth-switch" style="margin-top:.5rem;">
+    <a href="index.html" style="color:var(--primary-500);">← Back to Home</a>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

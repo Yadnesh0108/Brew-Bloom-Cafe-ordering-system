@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu — Brew &amp; Bloom Cafe</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="navbar__brand" href="index.html"><span class="logo-icon">☕</span> Brew &amp; Bloom</a>
+  <button class="hamburger"><span></span><span></span><span></span></button>
+  <ul class="navbar__links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="menu.html" class="active">Menu</a></li>
+    <li><a href="cart.html">Cart <span class="cart-count" style="display:none;">0</span></a></li>
+    <li><a href="orders.html" id="nav-orders">My Orders</a></li>
+    <li><a href="admin/index.html" id="nav-admin" style="display:none;">Admin ⚙️</a></li>
+    <li id="nav-auth"><a href="login.html" class="btn-primary">Login</a></li>
+    <li><button id="nav-logout" style="display:none;color:var(--primary-300);font-size:.88rem;cursor:pointer;background:none;border:none;padding:.5rem .9rem;">Logout</button></li>
+  </ul>
+</nav>
+
+<div class="page-header reveal">
+  <h1>Our Menu</h1>
+  <p>Crafted with love, served with warmth</p>
+</div>
+
+<section class="section reveal">
+  <!-- Search -->
+  <div class="search-bar">
+    <input type="text" id="menu-search" placeholder="Search coffee, snacks…" autocomplete="off">
+    <button class="btn btn-primary btn-sm" id="menu-search-btn">🔍</button>
+  </div>
+
+  <!-- Category Filter -->
+  <div class="category-bar" id="category-bar">
+    <div class="spinner-wrap" style="padding:1rem;"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Menu Grid -->
+  <div class="grid-4" id="menu-grid">
+    <div class="spinner-wrap"><div class="spinner"></div></div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer__bottom">&copy; 2024 Brew &amp; Bloom Cafe. All rights reserved.</div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/menu.js"></script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Admin Panel</title>
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar__logo">
+    <span>☕</span>
+    <h2>Brew &amp; Bloom<br><small style="font-size:0.75rem;font-weight:500;color:var(--text-sidebar);">Admin Panel</small></h2>
+  </div>
+  <div class="sidebar__label">Main</div>
+  <nav class="sidebar__nav">
+    <a href="index.html" class="active"><span class="nav-icon">📊</span> Dashboard</a>
+    <a href="menu.html"><span class="nav-icon">🍽️</span> Menu Items</a>
+    <a href="orders.html"><span class="nav-icon">📋</span> Orders</a>
+  </nav>
+  <div class="sidebar__label">Account</div>
+  <nav class="sidebar__nav">
+    <a href="../index.html"><span class="nav-icon">🏠</span> View Site</a>
+  </nav>
+  <div class="sidebar__footer">
+    <a href="#" id="admin-logout">🚪 Logout</a>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="admin-main">
+  <div class="admin-topbar">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <button id="sidebar-toggle" style="font-size:1.25rem;color:var(--text-main);">☰</button>
+      <h1>Dashboard</h1>
+    </div>
+    <div class="admin-topbar__right">
+      <span>👋 Hello, <strong id="admin-name">Admin</strong></span>
+    </div>
+  </div>
+
+  <div class="admin-content">
+
+    <!-- Stat Cards -->
+    <div class="stat-cards" id="stat-cards">
+      <div class="stat-card"><div class="stat-card__icon accent">📦</div><div><div class="stat-card__label">Today's Orders</div><div class="stat-card__value" id="stat-today-orders">—</div></div></div>
+      <div class="stat-card"><div class="stat-card__icon green">💰</div><div><div class="stat-card__label">Today's Revenue</div><div class="stat-card__value" id="stat-today-rev">—</div></div></div>
+      <div class="stat-card"><div class="stat-card__icon blue">📈</div><div><div class="stat-card__label">Weekly Revenue</div><div class="stat-card__value" id="stat-week-rev">—</div></div></div>
+      <div class="stat-card"><div class="stat-card__icon red">🍽️</div><div><div class="stat-card__label">Total Orders</div><div class="stat-card__value" id="stat-all-orders">—</div></div></div>
+    </div>
+
+    <!-- Transaction Statement (Bank Statement Style) -->
+    <div class="table-wrap" style="margin-top:1.5rem;">
+      <div class="table-header" style="flex-wrap:wrap;gap:.5rem;">
+        <h3>📒 Transaction Statement</h3>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-left:auto;">
+          <input type="date" id="tx-from" class="form-input"
+                 style="padding:.4rem .6rem;border:1px solid var(--border-color);border-radius:var(--radius-md);font-size:.82rem;">
+          <span style="color:var(--text-muted);font-size:.8rem;">→</span>
+          <input type="date" id="tx-to" class="form-input"
+                 style="padding:.4rem .6rem;border:1px solid var(--border-color);border-radius:var(--radius-md);font-size:.82rem;">
+          <button class="btn btn-outline btn-sm" onclick="loadTransactions()">Filter</button>
+          <button class="btn btn-outline btn-sm" onclick="resetTxFilter()">Reset</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="tx-statement">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date &amp; Time</th>
+              <th>Description</th>
+              <th>Customer</th>
+              <th>Method</th>
+              <th>Debit (₹)</th>
+              <th>Credit (₹)</th>
+              <th>Balance (₹)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tx-statement-body">
+            <tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-muted);">Loading transactions…</td></tr>
+          </tbody>
+          <tfoot id="tx-statement-foot" style="display:none;">
+            <tr style="font-weight:600;background:var(--bg-body);">
+              <td colspan="5" style="text-align:right;padding:.75rem 1rem;">Closing Balance</td>
+              <td id="tx-foot-debit" style="text-align:right;padding:.75rem .5rem;">—</td>
+              <td id="tx-foot-credit" style="text-align:right;padding:.75rem .5rem;">—</td>
+              <td id="tx-foot-balance" style="text-align:right;padding:.75rem 1rem;font-size:1.1rem;">—</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /admin-content -->
+</div><!-- /admin-main -->
+
+<script src="../js/main.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const user = await requireAdminJs();
+  if (!user) return;
+
+  document.getElementById('admin-logout').addEventListener('click', e => { e.preventDefault(); Auth.logout(); });
+
+  // Load summary
+  const res = await fetch('/api/admin/summary', { credentials: 'same-origin' });
+  const data = await res.json();
+
+  if (data.success) {
+    const s = data.data;
+    document.getElementById('stat-today-orders').textContent = s.today.total_orders;
+    document.getElementById('stat-today-rev').textContent    = '₹' + Number(s.today.revenue).toFixed(0);
+    document.getElementById('stat-week-rev').textContent     = '₹' + Number(s.this_week.revenue).toFixed(0);
+    document.getElementById('stat-all-orders').textContent   = s.all_time.total_orders;
+  }
+
+  // Load transaction statement
+  await loadTransactions();
+});
+
+// ── Transaction Statement ─────────────────────────────────────
+async function loadTransactions() {
+  const from = document.getElementById('tx-from')?.value || '';
+  const to   = document.getElementById('tx-to')?.value || '';
+  let url = '/api/admin/transactions?limit=100';
+  if (from && to) url += `&from=${from}&to=${to}`;
+
+  const res = await fetch(url, { credentials: 'same-origin' });
+  const json = await res.json();
+
+  const tbody = document.getElementById('tx-statement-body');
+  const tfoot = document.getElementById('tx-statement-foot');
+
+  if (!json.success) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-muted);">Failed to load transactions</td></tr>';
+    return;
+  }
+
+  const { transactions = [], closing_balance = 0 } = json.data;
+  if (!transactions.length) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-muted);">No transactions found</td></tr>';
+    if (tfoot) tfoot.style.display = 'none';
+    return;
+  }
+
+  if (tfoot) tfoot.style.display = 'table-footer-group';
+
+  const totalDebit = transactions.reduce((s, t) => s + parseFloat(t.debit || 0), 0);
+  const totalCredit = transactions.reduce((s, t) => s + parseFloat(t.credit || 0), 0);
+
+  if (tbody) {
+    tbody.innerHTML = transactions.map(tx => {
+      const date = new Date(tx.date).toLocaleString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+      const methodClass = tx.method === 'razorpay' || tx.method === 'online' ? 'online' : '';
+      const balanceClass = parseFloat(tx.balance) >= 0 ? 'positive' : '';
+      return `<tr>
+        <td><strong>#${tx.id}</strong></td>
+        <td style="font-size:.78rem;white-space:nowrap;">${date}</td>
+        <td>${tx.description}<br><span style="font-size:.75rem;color:var(--text-muted);">${tx.items || ''}</span></td>
+        <td style="font-size:.8rem;">${tx.customer}</td>
+        <td><span class="tx-method ${methodClass}">${tx.method}</span></td>
+        <td class="tx-debit">${parseFloat(tx.debit) > 0 ? '₹' + Number(tx.debit).toFixed(2) : '—'}</td>
+        <td class="tx-credit">${parseFloat(tx.credit) > 0 ? '₹' + Number(tx.credit).toFixed(2) : '—'}</td>
+        <td class="tx-balance ${balanceClass}">₹${Number(tx.balance).toFixed(2)}</td>
+        <td>${statusBadge(tx.status)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  if (tfoot) {
+    document.getElementById('tx-foot-debit').textContent = '₹' + totalDebit.toFixed(2);
+    document.getElementById('tx-foot-credit').textContent = '₹' + totalCredit.toFixed(2);
+    document.getElementById('tx-foot-balance').textContent = '₹' + closing_balance.toFixed(2);
+  }
+}
+
+function resetTxFilter() {
+  const from = document.getElementById('tx-from');
+  const to   = document.getElementById('tx-to');
+  if (from) from.value = '';
+  if (to) to.value = '';
+  loadTransactions();
+}
+</script>
+</body>
+</html>

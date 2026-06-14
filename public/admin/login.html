@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard Login</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="auth-page admin-bg">
+
+<div class="auth-card admin-login-panel">
+  <div class="auth-logo">
+    <div style="font-size:2.5rem;margin-bottom:.5rem;">⚡</div>
+    <h1 style="color:var(--text-heading);">Admin Portal</h1>
+    <p style="color:var(--text-muted);">Secure login for cafe staff operations</p>
+  </div>
+
+  <form id="admin-login-form" autocomplete="off">
+    <div class="form-group">
+      <label for="email">Admin Email</label>
+      <input type="email" id="email" name="email" placeholder="admin@cafe.com" required autofocus>
+    </div>
+    <div class="form-group">
+      <label for="password">Admin Password</label>
+      <input type="password" id="password" name="password" placeholder="••••••••" required>
+    </div>
+    <button type="submit" class="btn btn-primary btn-full" style="margin-top:.5rem;padding:.8rem;font-size:1rem;background:var(--primary);border:none;color:#fff;">Access Dashboard</button>
+  </form>
+
+  <div class="auth-switch" style="margin-top:1.5rem;">
+    <a href="../login.html" style="color:var(--text-muted);">← Back to Customer Login</a>
+  </div>
+</div>
+
+<script src="../js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('admin-login-form');
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn   = form.querySelector('[type=submit]');
+    const email = form.email.value.trim();
+    const pass  = form.password.value;
+
+    if (!email || !pass) { toast('Please fill in all fields.', 'error'); return; }
+
+    btn.disabled    = true;
+    btn.textContent = 'Authenticating…';
+
+    const res = await api.post('login', { email, password: pass });
+
+    if (res.success && res.data.role === 'admin') {
+      toast(`Welcome back, ${res.data.name}! 🎉`, 'success', 2000);
+      setTimeout(() => window.location.href = 'index.html', 800);
+    } else {
+      toast(res.message || 'Invalid admin credentials.', 'error');
+      btn.disabled    = false;
+      btn.textContent = 'Access Dashboard';
+    }
+  });
+});
+</script>
+</body>
+</html>

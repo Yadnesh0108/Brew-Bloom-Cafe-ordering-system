@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-label="Abstract geometric pattern">
+  <rect width="800" height="560" fill="#e7bee5"/>
+  <path d="M0 120L120 0H300L150 170Z" fill="#945d21"/>
+  <path d="M300 0H430L330 170L210 170Z" fill="#0dc0ba"/>
+  <path d="M510 0H800V180L600 120Z" fill="#9dd8ff"/>
+  <path d="M0 560V290L180 180L360 300L200 560Z" fill="#9dd8ff"/>
+  <path d="M420 120L800 300V560H620L510 420Z" fill="#945d21"/>
+  <path d="M350 200L580 560H420L300 440Z" fill="#0dc0ba"/>
+  <circle cx="675" cy="468" r="168" fill="#e7bee5"/>
+  <path d="M460 560L560 360C620 280 700 300 800 420V560Z" fill="#945d21"/>
+  <path d="M160 560L250 360L390 410L300 560Z" fill="#e4d573"/>
+</svg>

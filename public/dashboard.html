@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brew Heaven - Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-soft: #f9fbfe;
+      --ink: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+      --cyan: #0dc0ba;
+      --yellow: #e4d573;
+      --pink: #e7bee5;
+      --blue: #9dd8ff;
+      --accent: #945d21;
+      --green: #11a37f;
+      --orange: #d97706;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(30, 201, 198, 0.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(226, 183, 224, 0.16), transparent 22%),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    body {
+      margin: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 10px 6px 22px;
+    }
+
+    .topbar__title h1 {
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      line-height: 1.05;
+      margin-bottom: 6px;
+      letter-spacing: -0.04em;
+    }
+
+    .topbar__title p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .topbar__actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: min(540px, 100%);
+      background: #111111;
+      color: rgba(255, 255, 255, 0.8);
+      border-radius: 999px;
+      padding: 0.8rem 1rem;
+      box-shadow: 0 12px 30px rgba(17, 17, 17, 0.18);
+    }
+
+    .search span {
+      opacity: 0.65;
+      font-size: 0.95rem;
+    }
+
+    .search input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: #ffffff;
+      font-size: 0.92rem;
+    }
+
+    .search input::placeholder {
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .icon-btn,
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .avatar {
+      background: linear-gradient(135deg, #111827, #4b5563);
+      color: #fff;
+      font-weight: 700;
+      border: none;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .stat-card {
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      min-height: 102px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card__label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 18px;
+    }
+
+    .stat-card__value {
+      font-size: clamp(1.8rem, 3vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: -0.05em;
+    }
+
+    .stat-card--cyan { background: var(--cyan); }
+    .stat-card--yellow { background: var(--yellow); }
+    .stat-card--pink { background: var(--pink); }
+    .stat-card--blue { background: var(--blue); }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(280px, 1fr) minmax(320px, 1.15fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid rgba(229, 231, 235, 0.95);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      min-height: 340px;
+    }
+
+    .panel__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .panel__head h2 {
+      font-size: 1rem;
+      letter-spacing: -0.03em;
+    }
+
+    .pill {
+      border-radius: 999px;
+      background: #111111;
+      color: #ffffff;
+      font-size: 0.72rem;
+      padding: 0.45rem 0.8rem;
+    }
+
+    .trend-chart {
+      height: 250px;
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .trend-chart__axis {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: #8b95a7;
+      font-size: 0.72rem;
+      padding-top: 4px;
+    }
+
+    .trend-chart__plot {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      align-items: end;
+      position: relative;
+      padding-top: 8px;
+    }
+
+    .trend-chart__plot::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 24px;
+      background:
+        linear-gradient(to top, rgba(226, 232, 240, 0.9) 1px, transparent 1px) 0 0 / 100% 25%,
+        linear-gradient(to top, rgba(226, 232, 240, 0.55) 1px, transparent 1px) 0 12.5% / 100% 25%;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .trend-month {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 8px;
+      align-items: end;
+      min-height: 220px;
+    }
+
+    .trend-bars {
+      display: flex;
+      gap: 4px;
+      align-items: end;
+      justify-content: center;
+      height: 100%;
+      padding-top: 24px;
+    }
+
+    .trend-bar {
+      width: 10px;
+      border-radius: 999px 999px 0 0;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .trend-bar--a { background: #e1c85e; }
+    .trend-bar--b { background: #8d5d21; }
+    .trend-bar--c { background: #17c4c3; }
+
+    .trend-label {
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.75rem;
+      margin-top: 2px;
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 14px;
+      color: #6b7280;
+      font-size: 0.75rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .donut-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 210px;
+      position: relative;
+      margin-bottom: 14px;
+    }
+
+    .donut {
+      width: 168px;
+      height: 168px;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--yellow) 0 39%,
+        var(--accent) 39% 54%,
+        var(--cyan) 54% 78%,
+        var(--pink) 78% 100%
+      );
+      position: relative;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
+    }
+
+    .donut::after {
+      content: '';
+      position: absolute;
+      inset: 30px;
+      border-radius: 50%;
+      background: var(--surface);
+      box-shadow: inset 0 0 0 1px rgba(229, 231, 235, 0.9);
+    }
+
+    .donut__center {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .donut__center strong {
+      display: block;
+      font-size: 1.9rem;
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .donut__center span {
+      display: block;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .plan-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .plan-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.83rem;
+      color: #374151;
+    }
+
+    .transactions {
+      display: grid;
+      gap: 12px;
+    }
+
+    .tx-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tx-row:last-child {
+      border-bottom: none;
+    }
+
+    .tx-row strong {
+      display: block;
+      font-size: 0.9rem;
+    }
+
+    .tx-row span {
+      color: #6b7280;
+      font-size: 0.8rem;
+    }
+
+    .tx-meta {
+      text-align: right;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.28rem 0.62rem;
+      border-radius: 999px;
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .badge--paid { background: rgba(17, 163, 127, 0.12); color: var(--green); }
+    .badge--pending { background: rgba(217, 119, 6, 0.12); color: var(--orange); }
+    .badge--refunded { background: rgba(255, 99, 132, 0.12); color: #db2777; }
+
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: rgba(245, 247, 251, 0.92);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #111827;
+      z-index: 9999;
+    }
+
+    @media (max-width: 1180px) {
+      .stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .panel-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 780px) {
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .topbar__actions {
+        justify-content: stretch;
+        flex-wrap: wrap;
+      }
+
+      .search {
+        width: 100%;
+      }
+
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loader">Authorizing...</div>
+
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1>Dashboard</h1>
+        <p>Welcome back, <span id="user-name">User</span></p>
+      </div>
+      <div class="topbar__actions">
+        <label class="search" aria-label="Search dashboard">
+          <span>⌕</span>
+          <input type="search" placeholder="Search transactions, customers, subscriptions" />
+        </label>
+        <button class="icon-btn" type="button" aria-label="Notifications">🔔</button>
+        <div class="avatar" id="user-avatar">U</div>
+        <button class="btn btn-outline" style="border:none;background:rgba(255,255,255,0.06);color:var(--ink);font-size:.82rem;padding:.4rem .9rem;border-radius:999px;" onclick="logoutUser()">Log out</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="stat-grid" aria-label="Summary cards">
+        <article class="stat-card stat-card--cyan">
+          <div class="stat-card__label">Current Revenue</div>
+          <div class="stat-card__value">$12.4k</div>
+        </article>
+        <article class="stat-card stat-card--yellow">
+          <div class="stat-card__label">Current Customers</div>
+          <div class="stat-card__value">16,601</div>
+        </article>
+        <article class="stat-card stat-card--pink">
+          <div class="stat-card__label">Active Customers</div>
+          <div class="stat-card__value">33%</div>
+        </article>
+        <article class="stat-card stat-card--blue">
+          <div class="stat-card__label">Churn Rate</div>
+          <div class="stat-card__value">2%</div>
+        </article>
+      </section>
+
+      <section class="panel-grid">
+        <article class="panel">
+          <div class="panel__head">
+            <h2>Trend</h2>
+            <span class="pill">This year</span>
+          </div>
+          <div class="trend-chart">
+            <div class="trend-chart__axis">
+              <span>$15k</span>
+              <span>$12k</span>
+              <span>$9k</span>
+              <span>$6k</span>
+              <span>$3k</span>
+              <span>$0</span>
+            </div>
+            <div>
+              <div class="trend-chart__plot">
+                <div class="trend-month">
+                  <div class="trend-bars">
+                    <div class="trend-bar trend-bar--a" style="height: 46px;"></div>
+                    <div class="trend-bar trend-bar--b" style="height: 72px;"></div>
+                    <div class="trend-bar trend-bar--c" style="height: 108px;"></div>
+                  </div>
+                  <div class="trend-label">Jan</div>
+                </div>
+                <div class="trend-month">
+                  <div class="trend-bars">
+                    <div class="trend-bar trend-bar--a" style="height: 58px;"></div>
+                    <div class="trend-bar trend-bar--b" style="height: 98px;"></div>
+                    <div class="trend-bar trend-bar--c" style="height: 120px;"></div>
+                  </div>
+                  <div class="trend-label">Feb</div>
+                </div>
+                <div class="trend-month">
+                  <div class="trend-bars">
+                    <div class="trend-bar trend-bar--a" style="height: 66px;"></div>
+                    <div class="trend-bar trend-bar--b" style="height: 84px;"></div>
+                    <div class="trend-bar trend-bar--c" style="height: 114px;"></div>
+                  </div>
+                  <div class="trend-label">Mar</div>
+                </div>
+                <div class="trend-month">
+                  <div class="trend-bars">
+                    <div class="trend-bar trend-bar--a" style="height: 34px;"></div>
+                    <div class="trend-bar trend-bar--b" style="height: 58px;"></div>
+                    <div class="trend-bar trend-bar--c" style="height: 90px;"></div>
+                  </div>
+                  <div class="trend-label">Apr</div>
+                </div>
+                <div class="trend-month">
+                  <div class="trend-bars">
+                    <div class="trend-bar trend-bar--a" style="height: 92px;"></div>
+                    <div class="trend-bar trend-bar--b" style="height: 108px;"></div>
+                    <div class="trend-bar trend-bar--c" style="height: 138px;"></div>
+                  </div>
+                  <div class="trend-label">May</div>
+                </div>
+                <div class="trend-month">
+                  <div class="trend-bars">
+                    <div class="trend-bar trend-bar--a" style="height: 76px;"></div>
+                    <div class="trend-bar trend-bar--b" style="height: 126px;"></div>
+                    <div class="trend-bar trend-bar--c" style="height: 140px;"></div>
+                  </div>
+                  <div class="trend-label">Jun</div>
+                </div>
+                <div class="trend-month">
+                  <div class="trend-bars">
+                    <div class="trend-bar trend-bar--a" style="height: 88px;"></div>
+                    <div class="trend-bar trend-bar--b" style="height: 96px;"></div>
+                    <div class="trend-bar trend-bar--c" style="height: 130px;"></div>
+                  </div>
+                  <div class="trend-label">Jul</div>
+                </div>
+              </div>
+              <div class="chart-legend">
+                <span class="legend-item"><span class="dot" style="background:#e1c85e"></span>New</span>
+                <span class="legend-item"><span class="dot" style="background:#9ed0f6"></span>Renewals</span>
+                <span class="legend-item"><span class="dot" style="background:#8d5d21"></span>Churns</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel__head">
+            <h2>Sales</h2>
+            <span class="pill">This year</span>
+          </div>
+          <div class="donut-wrap">
+            <div class="donut"></div>
+            <div class="donut__center">
+              <div>
+                <strong>342</strong>
+                <span>Sales</span>
+              </div>
+            </div>
+          </div>
+          <div class="plan-list">
+            <div class="plan-item"><span><span class="dot" style="background:#e7d76a"></span> Basic plan</span><strong>39%</strong></div>
+            <div class="plan-item"><span><span class="dot" style="background:#8d5d21"></span> Standard plan</span><strong>15%</strong></div>
+            <div class="plan-item"><span><span class="dot" style="background:#1ec9c6"></span> Pro plan</span><strong>24%</strong></div>
+            <div class="plan-item"><span><span class="dot" style="background:#e2b7e0"></span> Enterprise</span><strong>22%</strong></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel__head">
+            <h2>Transactions</h2>
+            <span class="pill">Live</span>
+          </div>
+          <div class="transactions">
+            <div class="tx-row">
+              <div><strong>S. Thompson</strong><span>Espresso, croissant</span></div>
+              <div class="tx-meta"><span class="badge badge--paid">paid</span><strong>+$43</strong></div>
+            </div>
+            <div class="tx-row">
+              <div><strong>B. Sterling</strong><span>Afternoon tea</span></div>
+              <div class="tx-meta"><span class="badge badge--pending">pending</span><strong>+$29</strong></div>
+            </div>
+            <div class="tx-row">
+              <div><strong>O. Meadows</strong><span>Latte, muffin</span></div>
+              <div class="tx-meta"><span class="badge badge--paid">paid</span><strong>+$18</strong></div>
+            </div>
+            <div class="tx-row">
+              <div><strong>H. Hawthorne</strong><span>Americano</span></div>
+              <div class="tx-meta"><span class="badge badge--refunded">refunded</span><strong>+$15</strong></div>
+            </div>
+            <div class="tx-row">
+              <div><strong>L. Whitman</strong><span>Banoffee pie</span></div>
+              <div class="tx-meta"><span class="badge badge--pending">pending</span><strong>+$23</strong></div>
+            </div>
+            <div class="tx-row">
+              <div><strong>E. Frost</strong><span>Cappuccino</span></div>
+              <div class="tx-meta"><span class="badge badge--paid">paid</span><strong>+$12</strong></div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('/api/user')
+        .then(res => {
+          if (!res.ok) {
+            window.location.href = '/login.html?error=Please+log+in+to+access+the+dashboard';
+          }
+          return res.json();
+        })
+        .then(data => {
+          if (!data || !data.loggedIn) {
+            window.location.href = '/login.html?error=Please+log+in+to+access+the+dashboard';
+            return;
+          }
+
+          const name = data.user?.name || 'User';
+          document.getElementById('user-name').innerText = name;
+          document.getElementById('user-avatar').innerText = name.trim().charAt(0).toUpperCase();
+          document.getElementById('loader').style.display = 'none';
+        })
+        .catch(err => {
+          console.error('Auth error:', err);
+          window.location.href = '/login.html';
+        });
+    });
+
+    function logoutUser() {
+      fetch('/api/logout', { credentials: 'same-origin' })
+        .catch(() => {})
+        .finally(() => window.location.replace('login.html'));
+    }
+  </script>
+</body>
+
+</html>

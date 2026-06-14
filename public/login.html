@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Brew &amp; Bloom Cafe</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="auth-page">
+
+<div class="auth-card">
+  <div class="auth-logo">
+    <div style="font-size:2.5rem;margin-bottom:.5rem;">☕</div>
+    <h1>Welcome Back</h1>
+    <p>Sign in to your Brew &amp; Bloom account</p>
+  </div>
+
+  <form id="login-form" autocomplete="on">
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn btn-primary btn-full" style="margin-top:.5rem;padding:.8rem;font-size:1rem;">Sign In</button>
+  </form>
+
+  <div style="margin-top:1.25rem;padding:1rem;background:var(--primary-100);border-radius:var(--radius-md);font-size:.82rem;color:var(--primary-600);">
+    <strong>Demo credentials:</strong><br>
+    👤 User: john@example.com / demo1234<br>
+    🔑 Admin: admin@cafe.com / admin123
+  </div>
+
+  <div class="auth-switch">
+    Don't have an account? <a href="register.html">Create one →</a>
+  </div>
+  <div class="auth-switch" style="margin-top:.5rem;">
+    <a href="admin/login.html" style="color:var(--accent);">Café Staff? Login Here →</a>
+  </div>
+  <div class="auth-switch" style="margin-top:.5rem;">
+    <a href="index.html" style="color:var(--primary-500);">← Back to Home</a>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

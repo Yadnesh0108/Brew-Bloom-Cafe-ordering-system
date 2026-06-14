@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Successful — Brew &amp; Bloom Cafe</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .payment-success-page {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .success-card {
+      background: white;
+      border-radius: 24px;
+      padding: 2rem;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(62,84,62,.12);
+      animation: slideUp .5s ease both;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .receipt {
+      margin-top: 1.5rem;
+      border-top: 2px dashed var(--primary-300);
+      padding-top: 1.2rem;
+    }
+    .receipt__header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .receipt__header h2 {
+      font-family: var(--font-display);
+      color: var(--primary-800);
+      margin-bottom: .2rem;
+    }
+    .receipt__header p {
+      font-size: .82rem;
+      color: var(--primary-500);
+    }
+    .receipt__meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: .85rem;
+      color: var(--primary-600);
+      margin-bottom: 1rem;
+      padding-bottom: .6rem;
+      border-bottom: 1px solid var(--primary-100);
+    }
+    .receipt__table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85rem;
+      margin-bottom: .8rem;
+    }
+    .receipt__table th {
+      text-align: left;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--primary-400);
+      padding: .35rem .4rem;
+      border-bottom: 1px solid var(--primary-100);
+    }
+    .receipt__table td {
+      padding: .4rem;
+      border-bottom: 1px dashed var(--primary-100);
+      color: var(--primary-700);
+    }
+    .receipt__table td:last-child,
+    .receipt__table th:last-child {
+      text-align: right;
+    }
+    .receipt__totals {
+      padding-top: .5rem;
+      text-align: right;
+      font-size: .85rem;
+      line-height: 1.8;
+      color: var(--primary-600);
+    }
+    .receipt__totals .grand-total {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary-800);
+      font-family: var(--font-display);
+    }
+    .receipt__footer {
+      text-align: center;
+      margin-top: 1rem;
+      padding-top: .8rem;
+      border-top: 1px dashed var(--primary-300);
+      color: var(--primary-500);
+      font-size: .82rem;
+    }
+    .receipt__footer strong {
+      color: var(--primary-700);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    .btn-group .btn {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    #loading-state {
+      text-align: center;
+      color: var(--primary-500);
+      font-size: .95rem;
+      padding: 2rem;
+    }
+    #order-error {
+      text-align: center;
+      color: var(--red);
+      padding: 1rem;
+      display: none;
+    }
+
+    /* ── Print styles ──────────────────────────────────── */
+    @media print {
+      body { background: white !important; margin: 0; padding: 0; }
+      .navbar { display: none !important; }
+      .payment-success-page { min-height: auto; padding: 0; }
+      .success-card { box-shadow: none; border-radius: 0; padding: .5in; max-width: 100%; }
+      .success-icon, .btn-group, .btn, .stripe-badge { display: none !important; }
+      #loading-state, #order-error { display: none !important; }
+      .receipt { border-top: none; margin-top: 0; }
+      .receipt__header h2 { font-size: 1.2rem; }
+      @page { margin: .3in; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="navbar__brand" href="index.html"><span class="logo-icon">☕</span> Brew &amp; Bloom</a>
+  <ul class="navbar__links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="menu.html">Menu</a></li>
+    <li><a href="orders.html" id="nav-orders">My Orders</a></li>
+  </ul>
+</nav>
+
+<div class="payment-success-page">
+  <div class="success-card">
+
+    <div style="text-align:center;" id="success-icon">
+      <div class="success-icon">✓</div>
+      <h1 class="success-title">Payment Successful!</h1>
+      <p class="success-sub">Your payment was processed securely. Your order is now being prepared.</p>
+    </div>
+
+    <div id="loading-state">
+      <div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto 1rem;"></div>
+      Retrieving your order details…
+    </div>
+
+    <div id="order-error"></div>
+
+    <div id="receipt-area" style="display:none;"></div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print Receipt</button>
+      <a href="orders.html" class="btn btn-secondary">📋 View Orders</a>
+      <a href="menu.html" class="btn btn-outline">🍽️ Order More</a>
+    </div>
+
+    <div class="stripe-badge" style="text-align:center;font-size:.8rem;color:var(--primary-500);margin-top:1rem;">
+      🔒 Payment secured by Razorpay
+    </div>
+
+  </div>
+</div>
+
+<style>
+.success-icon {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 2.2rem; color: white;
+  margin-bottom: 1rem;
+  animation: pop .5s .2s cubic-bezier(.175,.885,.32,1.275) both;
+}
+@keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+.success-title { font-family: var(--font-display); font-size: 1.8rem; color: var(--primary-800); margin-bottom: .4rem; }
+.success-sub { color: var(--primary-500); font-size: .95rem; line-height: 1.6; margin-bottom: 0; }
+</style>
+
+<script src="js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get('order_id');
+
+  if (!orderId) {
+    document.getElementById('loading-state').innerHTML = '✅ Order confirmed! Head to <a href="orders.html">My Orders</a> to view details.';
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/orders/${orderId}`, { credentials: 'same-origin' });
+    const json = await res.json();
+
+    if (!json.success || !json.data) {
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('order-error').style.display = 'block';
+      document.getElementById('order-error').textContent = 'Could not load order details. Please go to My Orders.';
+      return;
+    }
+
+    const order = json.data;
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('receipt-area').style.display = 'block';
+
+    const items = order.items || [];
+    const subtotal = items.reduce((s, i) => s + parseFloat(i.unit_price) * i.quantity, 0);
+    const gst = subtotal * 0.05;
+    const total = parseFloat(order.total_price);
+
+    const date = new Date(order.created_at).toLocaleString('en-IN', {
+      day: 'numeric', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+
+    const statusColors = {
+      'Paid': '#16a34a', 'Pending': '#b45309',
+      'Preparing': '#0369a1', 'Ready': '#047857',
+      'Delivered': '#475569', 'Cancelled': '#b91c1c'
+    };
+
+    document.getElementById('receipt-area').innerHTML = `
+      <div class="receipt" id="receipt-content">
+        <div class="receipt__header">
+          <h2>☕ Brew &amp; Bloom</h2>
+          <p>12, Koregaon Park, Pune &bull; +91 98765 43210</p>
+        </div>
+
+        <div class="receipt__meta">
+          <span><strong>Order #${order.id}</strong></span>
+          <span>${date}</span>
+        </div>
+        <div class="receipt__meta" style="margin-top:-.8rem;border-bottom:none;">
+          <span>Table: ${order.table_no || '—'}</span>
+          <span style="color:${statusColors[order.status] || 'var(--primary-600)'}"><strong>${order.status}</strong></span>
+        </div>
+
+        <table class="receipt__table">
+          <thead><tr><th>Item</th><th>Qty</th><th>Amount</th></tr></thead>
+          <tbody>
+            ${items.map(i => `
+              <tr>
+                <td>${i.name}${i.category ? ' <span style="color:var(--primary-400);font-size:.75rem;">('+i.category+')</span>' : ''}</td>
+                <td>${i.quantity}</td>
+                <td>${formatPrice(parseFloat(i.unit_price) * i.quantity)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="receipt__totals">
+          <div>Subtotal &nbsp; ${formatPrice(subtotal)}</div>
+          <div>GST (5%) &nbsp; ${formatPrice(gst)}</div>
+          <div class="grand-total">Total &nbsp; ${formatPrice(total)}</div>
+        </div>
+
+        <div class="receipt__footer">
+          <strong>Thank you for visiting!</strong><br>
+          We hope you enjoy your meal ☕
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    console.error('Receipt load error:', err);
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('order-error').style.display = 'block';
+    document.getElementById('order-error').textContent = 'Could not load receipt. Please go to My Orders.';
+  }
+});
+</script>
+</body>
+</html>
