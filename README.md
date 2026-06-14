@@ -2,6 +2,33 @@
 
 A production-grade cafe ordering web application with menu browsing, cart management, Razorpay payments, printable receipts, admin dashboard with bank-statement-style transaction ledger, and a review system.
 
+## 📸 Application Preview
+
+Below are the screenshots of **Brew & Bloom** showcasing the core screens of both the customer ordering flow and the administrative management backend:
+
+### 1. Customer Experience & Ordering Flow
+
+| **Home & Hero Section** | **Interactive Menu & Category Filters** |
+| :---: | :---: |
+| ![Home & Hero Section](assets/screenshots/home-hero.png) | ![Interactive Menu & Category Filters](assets/screenshots/menu-categories.png) |
+| **Hero Landing Page:** A visually striking and modern landing page that welcomes customers, emphasizing the cafe's rich heritage with clear navigation links to menu browsing and checkout. | **Dynamic Menu & Filters:** Clean menu board with category tabs (Coffee, Tea, Snacks, Shakes, Desserts, etc.) powered by illustrative icons and a real-time instant search bar. |
+
+| **Seamless Checkout & Razorpay Payments** | **User Sign-In & Authentication** |
+| :---: | :---: |
+| ![Seamless Checkout & Razorpay Payments](assets/screenshots/razorpay-checkout.png) | ![User Sign-In & Authentication](assets/screenshots/auth-login.png) |
+| **Integrated Payment Gateway:** A sleek and modern checkout interface featuring pricing summaries and pre-integrated Razorpay options (UPI QR codes, cards, and wallets). | **Secure Authentication Hub:** A minimalist portal featuring session-based authentication, user registration, and a dedicated admin login portal, complete with easy-to-use demo credentials. |
+
+---
+
+### 2. Store Management & Analytics
+
+| **Admin Dashboard & Transaction Ledger** |
+| :---: |
+| ![Admin Dashboard & Transaction Ledger](assets/screenshots/admin-dashboard.png) |
+| **Administrative Console:** Real-time business intelligence metrics showcasing today's orders, revenue, weekly stats, and a bank-statement-style searchable transaction statement. |
+
+
+
 ## Tech Stack
 
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+)
